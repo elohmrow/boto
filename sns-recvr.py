@@ -15,11 +15,18 @@ class S(BaseHTTPRequestHandler):
         self.send_response(200)
         self.end_headers()
 
-        timestr = time.strftime("%Y%m%d-%H%M%S")
         data = simplejson.loads(self.data_string)
-        with open(timestr + ".json", "w") as outfile:
-            simplejson.dump(data, outfile)
-        print "{}".format(data)
+
+        message = data['Message'].rsplit(':::', 1)[0]
+        error_level = data['Message'].rsplit(':::', 1)[1]
+        if error_level == 'INFO':
+            timestr = time.strftime("%Y%m%d-%H%M%S")
+            with open(timestr + ".json", "w") as outfile:
+                simplejson.dump(message, outfile)
+        elif error_level == 'WARNING':
+            print error_level
+        else:
+            print "OH NO."
 
         return
 
