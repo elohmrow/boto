@@ -1,4 +1,4 @@
-import boto.sns
+import boto3
 
 class SNS:
     def __init__(self):
@@ -7,16 +7,21 @@ class SNS:
 
     def create_topic(self, topic):
         ''' Create an return an SNS Topic '''
-        conn = boto.sns.connect_to_region(self.region)
-
-        topic = conn.create_topic(topic)
+        client = boto3.client(
+            'sns',
+            region_name=self.region
+        )
+        topic = client.create_topic(Name=topic)
         
         return topic
 
-    def publish_to_topic(self, target_arn, message):
+    def publish_to_topic(self, topicARN, message):
         ''' Publish a message to an SNS Topic '''
-        conn = boto.sns.connect_to_region(self.region)
+        client = boto3.client(
+            'sns',
+            region_name=self.region
+        )
 
-        response = conn.publish(target_arn=target_arn, message=message)
+        response = client.publish(TopicArn=topicARN, Message=message)
 
         return response

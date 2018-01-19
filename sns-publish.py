@@ -14,5 +14,5 @@ else:
 
 sns = SNS()
 topic = sns.create_topic(topic)
-topicARN = topic['CreateTopicResponse']['CreateTopicResult']['TopicArn']
+topicARN = topic['TopicArn']
 response = sns.publish_to_topic(topicARN, message)
