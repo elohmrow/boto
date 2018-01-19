@@ -2,3 +2,4 @@
 Connection.py
 EC2Instance.py
 jira_creds.py
+*.json

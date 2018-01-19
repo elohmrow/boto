@@ -1,7 +1,7 @@
 from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 import simplejson
 import time
-import ticket from create_jira_ticket
+from create_jira_ticket import ticket
 
 class S(BaseHTTPRequestHandler):
     def _set_headers(self):
