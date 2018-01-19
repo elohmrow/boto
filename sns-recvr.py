@@ -1,6 +1,7 @@
 from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 import simplejson
 import time
+import ticket from create_jira_ticket
 
 class S(BaseHTTPRequestHandler):
     def _set_headers(self):
@@ -20,13 +21,15 @@ class S(BaseHTTPRequestHandler):
         message = data['Message'].rsplit(':::', 1)[0]
         error_level = data['Message'].rsplit(':::', 1)[1]
         if error_level == 'INFO':
+            # log the message to a file:
             timestr = time.strftime("%Y%m%d-%H%M%S")
             with open(timestr + ".json", "w") as outfile:
                 simplejson.dump(message, outfile)
         elif error_level == 'WARNING':
             print error_level
         else:
-            print "OH NO."
+            # create a JIRA ticket:
+            ticket(message)
 
         return
 
