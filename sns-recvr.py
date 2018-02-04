@@ -29,27 +29,33 @@ class S(BaseHTTPRequestHandler):
         else:
             account = (p.search(message).group(1)).strip()
 
-        if error_level == 'INFO':
-            # log the message to a file:
-            logit(account, message)
-        elif error_level == 'WARNING':
-            print error_level
-        else:
-            # create a JIRA ticket:
-            ticket(message)
+        logit(account, message, error_level)
 
         return
 
-def logit(account, message):
+def logit(account, message, error_level):
     timestr = time.strftime("%Y%m%d-%H%M%S")
     cwd = os.getcwd()
 
-    account = os.path.join(cwd, account)
-    if not os.path.isdir(account):
-        os.makedirs(account)
-    
-    with open(os.path.join(account, timestr + ".json"), "w") as outfile:
-        simplejson.dump(message, outfile)
+    # { timestr, [snsTopic], account, [messageID], error_level }
+    items = (timestr, "snsTopic", account, "messageID", error_level)
+    logfile = open('sns-recvr.log', 'a+')
+    logfile.write(",".join(items))
+    logfile.write("\n")
+    logfile.close()  
+
+    if error_level == 'ERROR':
+        # create a JIRA ticket:
+        ticket(message)
+    elif error_level == 'WARNING':
+        return      
+    else:
+        account = os.path.join(cwd, account)
+        if not os.path.isdir(account):
+            os.makedirs(account)
+        
+        with open(os.path.join(account, timestr + ".json"), "w") as outfile:
+            simplejson.dump(message, outfile)
 
 def run(server_class=HTTPServer, handler_class=S, port=9999):
     server_address = ('', port)

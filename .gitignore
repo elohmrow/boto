@@ -4,3 +4,4 @@ EC2Instance.py
 jira_creds.py
 *.json
 nohup.out
+sns-recvr.log
