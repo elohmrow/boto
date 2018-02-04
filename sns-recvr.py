@@ -1,6 +1,8 @@
 from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 import simplejson
 import time
+import re
+import os
 from create_jira_ticket import ticket
 
 class S(BaseHTTPRequestHandler):
@@ -20,11 +22,16 @@ class S(BaseHTTPRequestHandler):
 
         message = data['Message'].rsplit(':::', 1)[0]
         error_level = data['Message'].rsplit(':::', 1)[1]
+
+        p = re.compile('account:\s+(.*?)\+>')
+        if p.search(message) is None:
+            account = "logs"
+        else:
+            account = p.search(message).group(1)
+
         if error_level == 'INFO':
             # log the message to a file:
-            timestr = time.strftime("%Y%m%d-%H%M%S")
-            with open(timestr + ".json", "w") as outfile:
-                simplejson.dump(message, outfile)
+            logit(account, message)
         elif error_level == 'WARNING':
             print error_level
         else:
@@ -32,6 +39,21 @@ class S(BaseHTTPRequestHandler):
             ticket(message)
 
         return
+
+def logit(account, message):
+    timestr = time.strftime("%Y%m%d-%H%M%S")
+    cwd = os.getcwd()
+
+    if account is None:
+        with open(timestr + ".json", "w") as outfile:
+            simplejson.dump(message, outfile)
+    else:
+        account = os.path.join(cwd, account.strip())
+        if not os.path.isdir(account):
+            os.makedirs(account)
+        
+        with open(os.path.join(account, timestr + ".json"), "w") as outfile:
+            simplejson.dump(message, outfile)
 
 def run(server_class=HTTPServer, handler_class=S, port=9999):
     server_address = ('', port)
